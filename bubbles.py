@@ -192,7 +192,7 @@ def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5),
     return(im_out, mask, mu_x, mu_y, sigma)
 
 
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, sum_merge=False, max_sigma_from_nonzero=np.Infinity):
+def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, sum_merge=False, max_sigma_from_nonzero=np.inf):
     """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im<=bg gives 0, else 1, so binary dilation can be applied. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -202,13 +202,13 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
-    max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.Infinity` for no restriction
+    max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.inf` for no restriction
     """
     
-    sh = np.asarray(im).shape  # get shape   
+    sh = np.asarray(im).shape  # get shape
     
     # if no limits, just use bubbles_mask()
-    if max_sigma_from_nonzero == np.Infinity:
+    if np.isposinf(max_sigma_from_nonzero):
         return(bubbles_mask(im=im, sigma=sigma, bg=bg, scale=scale))
     
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
