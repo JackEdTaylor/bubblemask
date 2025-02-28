@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: bubblemask
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jack E.
+    family-names: Taylor
+    email: Taylor@psych.uni-frankfurt.de
+    affiliation: Goethe University Frankfurt
+    orcid: 'https://orcid.org/0000-0003-4765-0118'
+repository-code: 'https://github.com/JackEdTaylor/bubblemask/'
+abstract: >-
+  Python package for applying Gaussian 'Bubbles' masks to
+  image stimuli.
+keywords:
+  - Python
+  - face
+  - bubbles
+  - reverse-correlation
+  - stimuli-generation
+license: GPL-3.0
+commit: >-
+  https://github.com/JackEdTaylor/bubblemask/commit/f75b83273412a4d8527b6ec5d7021548a9fa4053
+version: 1.0.1
+date-released: '2025-02-28'
