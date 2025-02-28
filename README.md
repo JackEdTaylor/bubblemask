@@ -6,6 +6,14 @@ Python modules for applying the Gaussian 'Bubbles' mask to image stimuli, as des
 
 This method applies a mask with any number of bubbles, optionally with per-bubble sigma parameters, to a given image. The 2-D bubbles are calculated using the outer product of 1-D Gaussian densities.
 
+## Installation
+
+Install via pip:
+
+```sh
+pip install bubblemask
+```
+
 ## Basic Usage
 
 ```python
