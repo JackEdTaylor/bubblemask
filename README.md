@@ -1,17 +1,17 @@
-# bubbles
+# bubblemask
 
 [![DOI](https://zenodo.org/badge/562151332.svg)](https://zenodo.org/badge/latestdoi/562151332)
 
-Python modules for applying the Gaussian 'Bubbles' mask to image stimuli, as described by [Gosselin and Schyns (2001)](https://doi.org/10.1016/S0042-6989(01)00097-9). This approach applies a mask to an images, with a number of Gaussian 'bubbles' providing windows to the actual pixel values. The method is useful for probing the functional impact of information at different locations in an image (e.g., informativeness of different face regions for emotion recognition). The method can also be applied to examine the size of such functional regions (varying sigma of the Gaussian bubbles), or features like colour (applying the technique to RGB separately) or the spatial frequency of relevant information (applying to specific frequency bandwidths).
+Python modules for applying the Gaussian 'Bubbles' mask to image stimuli, as described by [Gosselin and Schyns (2001)](https://doi.org/10.1016/S0042-6989(01)00097-9). This approach applies a mask to an images, with a number of Gaussian 'bubblemask' providing windows to the actual pixel values. The method is useful for probing the functional impact of information at different locations in an image (e.g., informativeness of different face regions for emotion recognition). The method can also be applied to examine the size of such functional regions (varying sigma of the Gaussian bubbles), or features like colour (applying the technique to RGB separately) or the spatial frequency of relevant information (applying to specific frequency bandwidths).
 
-The `bubbles` module implements the Gaussian bubbles method, applying a mask with any number of bubbles, optionally with per-bubble sigma parameters, to a given image. The 2-D bubbles are calculated using the outer product of 1-D Gaussian densities.
+The `bubblemask` module implements the Gaussian bubbles method, applying a mask with any number of bubbles, optionally with per-bubble sigma parameters, to a given image. The 2-D bubbles are calculated using the outer product of 1-D Gaussian densities.
 
 ## Basic Usage
 
-All functions are provided in module `bubbles.py`
+All functions are provided in module `bubblemask.py`
 
 ```python
-import bubbles
+import bubblemask
 import os.path as op
 from PIL import Image
 ```
@@ -20,7 +20,7 @@ from PIL import Image
 
 ```python
 face = Image.open(op.join('img', 'face.png'))
-face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[17, 19, 20.84, 25, 30], bg=127)
+face1, mask, mu_x, mu_y, sigma = bubblemask.bubbles_mask(im=face, sigma=[17, 19, 20.84, 25, 30], bg=127)
 
 face.show(); face1.show()
 ```
@@ -69,7 +69,7 @@ print(sigma)
 By default, `bubbles_mask()` will position bubbles randomly in the image. The exact desired locations of bubbles can be specified via the `mu_x` and `mu_y` arguments. Here I specify two bubbles to be centred on eyes, with different sigma values, of 20 and 10. Note that `mu_x` and `mu_y` can be floats.
 
 ```python
-face2 = bubbles.bubbles_mask(
+face2 = bubblemask.bubbles_mask(
     im=face, mu_x=[85, 186.7], mu_y=[182.5, 182.5], sigma=[20, 10], bg=127
 )[0]
 
@@ -92,10 +92,10 @@ mu_y = [186, 102, 219, 63, 80]
 sigma = [20, 20, 20, 20, 20]
 
 # method using outer products of Gaussian densities
-face3a, mask3a, _, _, _ = bubbles.bubbles_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+face3a, mask3a, _, _, _ = bubblemask.bubbles_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
 
 # method using convolution with Gaussian kernel
-face3b, mask3b, _, _, _ = bubbles.bubbles_conv_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+face3b, mask3b, _, _, _ = bubblemask.bubbles_conv_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
 
 # compare faces
 face3a.show(); face3b.show()
@@ -135,7 +135,7 @@ The usage is similar to `bubbles_mask()`, but with additional argument `max_sigm
 ```python
 a = Image.open(op.join('img', 'a.png'))
 
-a1 = bubbles.bubbles_mask_nonzero(
+a1 = bubblemask.bubbles_mask_nonzero(
     im=a, sigma=[10,10,10,10], bg=127, max_sigma_from_nonzero=2
 )[0]
 
@@ -148,7 +148,7 @@ a.show(); a1.show()
 Here is a snippet demonstrating that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. This shows 1000 bubbles (in blue) superimposed on the letter *a* (in red), with bubbles' centres at a maximum distance of 1 standard deviations from the character.
 
 ```python
-a2, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(
+a2, mask, mu_x, mu_y, sigma = bubblemask.bubbles_mask_nonzero(
     im=a, sigma=np.repeat(3, repeats=1000), bg=127, max_sigma_from_nonzero=1
 )
 
@@ -170,9 +170,9 @@ Typical stimuli using the Bubbles technique use artificial stimuli on grey backg
 ```python
 cat = Image.open(op.join('img', 'cat.jpg'))
 
-cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
-cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
-cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 55])[0]
+cat1 = bubblemask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
+cat2 = bubblemask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
+cat3 = bubblemask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 55])[0]
 
 cat.show(); cat1.show(); cat2.show(); cat3.show()
 ```
@@ -196,10 +196,10 @@ sigma = [5, 10, 7.5]
 sh = (100, 100)
 
 # plot all mask options (the first is the default)
-masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=True),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=True)]
+masks = [bubblemask.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False),
+         bubblemask.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=True),
+         bubblemask.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=False),
+         bubblemask.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=True)]
 
 for i in range(4):
     plt.imshow(masks[i])
@@ -216,13 +216,13 @@ for i in range(4):
 The `bubbles_mask()` function can be accessed from the command line. This requires an `input` argument for a file path to the original image, and an `--output` argument, to write the result to file.
 
 ```
-python bubbles.py --help
+python bubblemask.py --help
 ```
 
 ```
-usage: bubbles.py [-h] -i INPUT -o OUTPUT -s SIGMA [SIGMA ...] [-x MU_X [MU_X ...]]
-                  [-y MU_Y [MU_Y ...]] [-b BACKGROUND [BACKGROUND ...]] [--unscaled]
-                  [--summerge] [--seed SEED]
+usage: bubblemask.py [-h] -i INPUT -o OUTPUT -s SIGMA [SIGMA ...] [-x MU_X [MU_X ...]]
+                     [-y MU_Y [MU_Y ...]] [-b BACKGROUND [BACKGROUND ...]] [--unscaled]
+                     [--summerge] [--seed SEED]
 
 options:
   -h, --help            show this help message and exit
