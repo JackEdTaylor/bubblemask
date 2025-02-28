@@ -23,5 +23,8 @@ keywords:
 license: GPL-3.0
 commit: >-
   https://github.com/JackEdTaylor/bubblemask/commit/f75b83273412a4d8527b6ec5d7021548a9fa4053
-version: 1.0.1
+version: 1.0.0
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.14946177
 date-released: '2025-02-28'
