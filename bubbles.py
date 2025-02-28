@@ -204,6 +204,10 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.inf` for no restriction
     """
+
+    # check that max_sigma_from_nonzero is just one value
+    if np.size(max_sigma_from_nonzero) != 1:
+        ValueError('max_sigma_from_nonzero should be one element')
     
     sh = np.asarray(im).shape  # get shape
     
