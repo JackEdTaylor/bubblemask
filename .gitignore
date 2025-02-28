@@ -1,1 +1,3 @@
 __pycache__
+dist/
+src/bubblemask.egg-info/
