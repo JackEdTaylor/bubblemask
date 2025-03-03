@@ -84,19 +84,19 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
     **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
     """
 
-    # if no ref_im, use the original image
-    if ref_im is None:
-        ref_im = im
-
     # check that max_sigma_from_nonzero is just one value
     if np.size(max_sigma_from_nonzero) != 1:
         ValueError('max_sigma_from_nonzero should be one element')
     
-    sh = np.asarray(im).shape  # get shape
-    
     # if no limits, just use bubbles_mask()
     if np.isposinf(max_sigma_from_nonzero):
-        return(bubbles_mask(im=im, sigma=sigma, bg=bg, **kwargs))
+        return bubbles_mask(im=im, sigma=sigma, bg=bg, **kwargs)
+    
+    sh = np.asarray(im).shape  # get shape
+
+    # if no ref_im, use the original image
+    if ref_im is None:
+        ref_im = im
     
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
