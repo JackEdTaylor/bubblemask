@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import norm
 from scipy.ndimage import gaussian_filter
 
-def build_mask(mu_y, mu_x, sigma, sh, scale, sum_merge):
+def build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False):
     """Build a Bubbles mask which can be applied to an image of shape `sh`. Returns a matrix for the mask.
     
      Keyword arguments:
