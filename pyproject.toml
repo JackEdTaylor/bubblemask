@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bubblemask"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="Jack E. Taylor", email="Taylor@psych.uni-frankfurt.de" },
 ]
