@@ -130,55 +130,16 @@ plt.colorbar()
 
 This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (i) more precise in specifying mu, and (ii) supports bubbles of different sizes.
 
-## Avoiding Uninformative Locations
-
-It is often more efficient to avoid adding bubbles to regions that you know have no informative information, such as the background. `bubbles_mask_nonzero()` uses a binary dilation method ([`skimage.morphology.binary_dilation`](https://scikit-image.org/docs/stable/api/skimage.morphology.html#skimage.morphology.binary_dilation)) to exclude regions of the background which are sufficiently distant as to be uninformative.
-
-Specifically, the centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background pixel. Background pixels are identified as `im <= bg`.
-
-The usage is similar to `bubbles_mask()`, but with additional argument `max_sigma_from_nonzero`. Here, we use 4 bubbles and specify that the centre of each bubble should be no more than 2 standard deviations away from the non-background pixels of the letter *a*.
-
-```python
-a = Image.open(op.join('img', 'pre', 'a.png'))
-
-a1 = mask.bubbles_mask_nonzero(
-    im=a, sigma=[10,10,10,10], bg=127, max_sigma_from_nonzero=2
-)[0]
-
-a.show(); a1.show()
-```
-
-![](img/pre/a.png)
-![](img/post/a1.png)
-
-Here is a snippet demonstrating that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. This shows 1000 bubbles (in blue) superimposed on the letter *a* (in red), with bubbles' centres at a maximum distance of 1 standard deviations from the character.
-
-```python
-a2, maska2, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(
-    im=a, sigma=np.repeat(3, repeats=1000), bg=127, max_sigma_from_nonzero=1
-)
-
-a_arr = np.asarray(a).copy()
-a_arr[a_arr==127] = 0
-a_arr[:,:,1] = 0
-a_arr[:,:,2] = maska2 * 255
-Image.fromarray(a_arr).show()
-```
-
-![](img/post/a2_locs.png)
-
-Note: you can also specify a reference image, `ref_im`, from which the background pixels in `im` should be identified. This is useful in cases where `im` has already been altered (e.g., phase-randomised).
-
 ## Naturalistic Images
 
-Typical stimuli using the Bubbles technique use artificial stimuli on grey backgrounds, but this method can also be applied to more naturalistic, colour stimuli, with the background defined by the `bg` argument.
+Examples above use artificial stimuli on grey backgrounds, but this method can also be applied to more naturalistic, colour stimuli, with the background defined by the `bg` argument.
 
 ```python
 cat = Image.open(op.join('img', 'pre', 'cat.jpg'))
 
-cat1 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
-cat2 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
-cat3 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 55])[0]
+cat1 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]  # grey background
+cat2 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 127])[0]  # magenta background
+cat3 = mask.bubbles_mask(im=cat.convert('RGBA'), sigma=np.repeat(10, 20), bg=[0, 0, 0, 0])[0]  # transparent background
 
 cat.show(); cat1.show(); cat2.show(); cat3.show()
 ```
@@ -187,6 +148,57 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 ![](img/post/cat1.png)
 ![](img/post/cat2.png)
 ![](img/post/cat3.png)
+![](img/post/cat4.png)
+
+## Avoiding Uninformative Locations
+
+It is often more efficient to avoid adding bubbles to regions that you know have no informative information, such as the background. `bubbles_mask_nonzero()` can exclude regions of the background which are sufficiently distant as to be uninformative.
+
+Specifically, the centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background pixel in a reference image. Background pixels are identified as `im <= bg`.
+
+The usage is similar to `bubbles_mask()`, but with additional arguments `ref_im` (reference image) and `max_sigma_from_nonzero`. Imagine we are only interested in the letter *a* in this image:
+
+```python
+a_cat = Image.open(op.join('img', 'pre', 'a_cat.png'))
+a_cat.show()
+```
+
+![](img/pre/a_cat.png)
+
+First, we need a reference image, where the target region has values of 1, and the uninformative regions have values of 0. If there is an alpha channel, this should also have a value of 0 for the uninformative regions.
+
+```python
+a_cat_ref = Image.open(op.join('img', 'pre', 'a_cat_ref.png'))
+a_cat_ref.show()
+```
+
+![](img/pre/a_cat_ref.png)
+
+Now we can apply bubbles to the original image, targeting the letter *a*. Here, we apply 5 bubbles and specify that the centre of each bubble should be no more than 1 standard deviation away from the non-background pixels of the letter *a*. Also note that we give `ref_bg` as `[0,0,0,255]`, because we do not have a transparent alpha in the reference image.
+
+```python
+a_cat1 = mask.bubbles_mask_nonzero(
+    im=a_cat, ref_im=a_cat_ref, sigma=[10,10,10,10,10], ref_bg=[0,0,0,255], bg=[0,0,0,255], max_sigma_from_nonzero=1
+)[0]
+
+a_cat1.show()
+```
+
+![](img/post/a_cat1.png)
+
+Here is a snippet showing that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. Here we apply 1000 bubbles (in blue) superimposed on the letter *a*, with bubbles' centres at a maximum distance of 1 standard deviations from the character.
+
+```python
+a_cat2, maskacat2, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(
+    im=a_cat, ref_im=a_cat_ref, sigma=np.repeat(3, repeats=1000), ref_bg=[0,0,0,255], bg=[0,0,0,255], max_sigma_from_nonzero=1
+)
+
+a_cat2.show()
+plt.imshow(maskacat2); plt.colorbar()
+```
+
+![](img/post/a_cat2.png)
+![](img/post/a_cat2_mask.png)
 
 ## Bubble Merging Method
 

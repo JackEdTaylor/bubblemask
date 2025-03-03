@@ -4,7 +4,7 @@ from PIL import Image
 import os.path as op
 import numpy as np
 import matplotlib.pyplot as plt
-from bubblemask import mask
+from src.bubblemask import mask
 
 np.random.seed(152872)
 
@@ -60,32 +60,31 @@ plt.imshow(mask3a-mask3b)
 plt.colorbar()
 fig.savefig(op.join(out_dir, 'face3_mask_diff.png'), dpi=80, bbox_inches='tight')
 
-# %% Example 3 - letter a
+# %% Example 3 - letter a on the cat image
 
-a = Image.open(op.join(in_dir, 'a.png'))
+a_cat = Image.open(op.join(in_dir, 'a_cat.png'))
+a_cat_ref = Image.open(op.join('img', 'pre', 'a_cat_ref.png'))
 
-a1, maska1, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(im=a, sigma=[10,10,10,10], bg=127, max_sigma_from_nonzero=2)
+a_cat1, maskacat1, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(im=a_cat, ref_im=a_cat_ref, sigma=[10,10,10,10,10], max_sigma_from_nonzero=1, ref_bg=[0,0,0,255], bg=[0,0,0,255])
 
-a1.save(op.join(out_dir, 'a1.png'))
+a_cat1.save(op.join(out_dir, 'a_cat1.png'))
 
 # demonstrate that the space is unused
-a2, maska2, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(im=a, sigma=np.repeat(3, repeats=1000), bg=127, max_sigma_from_nonzero=1)
+a_cat2, maskacat2, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(im=a_cat, ref_im=a_cat_ref, sigma=np.repeat(2.5, repeats=1000), max_sigma_from_nonzero=5, ref_bg=[0,0,0,255], bg=[0,0,0,255])
 
-a2.save(op.join(out_dir, 'a2.png'))
+a_cat2.save(op.join(out_dir, 'a_cat2.png'))
 
-
-a_arr = np.asarray(a).copy()
-a_arr[a_arr==127] = 0
-a_arr[:,:,1] = 0
-a_arr[:,:,2] = maska2 * 255
-Image.fromarray(a_arr).save(op.join(out_dir, 'a2_locs.png'))
+fig = plt.figure(figsize=(6, 2.75))
+plt.imshow(maskacat2)
+plt.colorbar()
+fig.savefig(op.join(out_dir, 'a_cat2_mask.png'), dpi=80, bbox_inches='tight')
 
 # %% Example 4 - cat
 
 cat = Image.open(op.join(in_dir, 'cat.png'))
 cat1 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
-cat2 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
-cat3 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 127])[0]
+cat2 = mask.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 127])[0]
+cat3 = mask.bubbles_mask(im=cat.convert('RGBA'), sigma=np.repeat(10, 20), bg=[0, 0, 0, 0])[0]
 
 cat1.save(op.join(out_dir, 'cat1.png'))
 cat2.save(op.join(out_dir, 'cat2.png'))
