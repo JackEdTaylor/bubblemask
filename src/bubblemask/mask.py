@@ -80,7 +80,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, max_sigm
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction
-    **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum`.
+    **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
     """
 
     # if no ref_im, use the original image
