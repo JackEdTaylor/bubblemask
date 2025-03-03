@@ -94,7 +94,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     
     # if no limits, just use bubbles_mask()
     if np.isposinf(max_sigma_from_nonzero):
-        return(bubbles_mask(im=im, sigma=sigma, bg=bg, scale=scale))
+        return(bubbles_mask(im=im, sigma=sigma, bg=bg, scale=scale, sum_merge=sum_merge))
     
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
