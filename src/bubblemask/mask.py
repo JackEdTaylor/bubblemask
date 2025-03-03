@@ -69,9 +69,8 @@ def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0):
     
     return(im_out, mask, mu_x, mu_y, sigma)
 
-
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0, max_sigma_from_nonzero=np.inf, **kwargs):
-    """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im>ref_bg (or ref_im>ref_bg), so binary dilation can be applied. Any products of sigma and max_sigma_from_nonzero that are floats will be rounded to the nearest integer. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+def bubbles_mask_nonzero (im, ref_im=None, sigma=np.array([5]), bg=0, ref_bg=0, max_sigma_from_nonzero=np.inf, max_iter=1e5, **kwargs):
+    """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im>ref_bg (or ref_im>ref_bg), so binary dilation can be applied, with a slight buffer (rounded to ceiling). The function then picks random locations, and keeps them if the Euclidean distance from the non-zero values is within the tolerance, otherwise rejecting them. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
     im -- the image to apply the bubbles mask to
@@ -81,6 +80,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction
+    max_iter -- maximum number of random samples to try for mu location, for each sigma
     **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
     """
 
@@ -104,11 +104,8 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
     # get acceptable boundaries for each sigma
-    sigma_dil_iters = np.round(np.array(sigma) * max_sigma_from_nonzero).astype(int)
-
-    # check that the product of sigma and max_sigma_from_nonzero is always an integer - otherwise give a warning
-    if np.any(sigma_dil_iters != sigma_dil_iters.round()):
-        Warning('Some values in max_sigma_from_nonzero*sigma are non-integer. These will be rounded to the nearest integer!')
+    sigma_dists = np.array(sigma) * max_sigma_from_nonzero
+    sigma_dil_iters = np.ceil(sigma_dists).astype(int)
     
     n_iter = np.max(sigma_dil_iters)
     
@@ -116,7 +113,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
     max_axis = 1 if ref_im_arr.ndim==2 else 2
     mu_bounds = np.max(ref_im_arr > ref_bg, axis=max_axis)
     
-    # this will contain the desired mu bounds for each sigma
+    # this will contain the maximum mu bounds for each sigma
     sigma_mu_bounds = [None] * len(sigma)
     
     for i in range(n_iter):
@@ -128,20 +125,40 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
                 sigma_mu_bounds[sigma_i] = mu_bounds.copy()
 
     # get possible mu locations for each sigma
-    poss_mu = [np.where(idx_ok) for idx_ok in sigma_mu_bounds]
-    
-    # get mu locations for each bubble, as an index in the possible mu values
-    mu_idx = [np.random.randint(low=0, high=len(x[0]), size=1) for x in poss_mu]
-    
-    # generate actual mu values as index plus uniform noise between -0.5 and 0.5 (rather than all mus being on integers)
-    mu_y = [int(poss_mu[i][0][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
-    mu_x = [int(poss_mu[i][1][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
+    poss_mu_seeds = [np.where(idx_ok) for idx_ok in sigma_mu_bounds]
+
+    mu = np.zeros((2, len(sigma)))
+    mu[:] = np.nan
+
+    for i in range(len(sigma)):
+        attempt = 0
+        sample_ok = False
+
+        while not sample_ok:
+            attempt += 1
+
+            if attempt > max_iter:
+                RuntimeError('Reached max_iter!')
+
+            p = np.random.randint(low=0, high=len(poss_mu_seeds[i][0]), size=1)  # index of the seed sample
+            mu[:, i] = np.array( [poss_mu_seeds[i][0][p], poss_mu_seeds[i][1][p]] ).flatten()  # store the seed location
+            mu[:, i] += np.random.uniform(low=-0.5, high=0.5, size=2)  # add jitter from the seed location
+            dist_i = np.linalg.norm(mu[:, i] - np.array(poss_mu_seeds[i]).T, axis=1)
+
+            # reject sample if outside of bounds
+            if np.min(dist_i) > sigma_dists[i]:
+                mu[:, i] = np.nan
+            else:
+                sample_ok = True
     
     # build mask
-    mask = build.build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, **kwargs)
+    mu_y = mu[0, :]
+    mu_x = mu[1, :]
+    mask = build.build_mask(mu_x=mu_x, mu_y=mu_y, sigma=sigma, sh=sh, **kwargs)
     
     # apply mask
     im_out_mat = apply.apply_mask(im=im, mask=mask, bg=bg)
     im_out = Image.fromarray(np.uint8(im_out_mat))
     
     return(im_out, mask, mu_x, mu_y, sigma)
+
