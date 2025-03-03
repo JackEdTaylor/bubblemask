@@ -97,6 +97,9 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0
     # if no ref_im, use the original image
     if ref_im is None:
         ref_im = im
+    else:
+        if not np.all(np.asarray(ref_im).shape[:2] == np.asarray(im).shape[:2]):
+            ValueError('Inconsistent dimensions between im and ref_im')
     
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
