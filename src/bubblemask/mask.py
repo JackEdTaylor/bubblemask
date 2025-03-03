@@ -3,7 +3,7 @@ import numpy as np
 from skimage.morphology import binary_dilation
 from . import build, apply
 
-def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, scale=True, sum_merge=False):
+def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, **kwargs):
     """Apply the bubbles mask to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -14,6 +14,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, scale=Tru
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
+    **kwargs -- passed to `build.build_mask`, e.g., `scale` and `sum_merge`.
     """
     
     n = len(sigma)  # get n bubbles
@@ -27,7 +28,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, scale=Tru
         mu_x = np.random.uniform(low=0, high=sh[1], size=n)
     
     # build mask
-    mask = build.build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, sum_merge=sum_merge)
+    mask = build.build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, **kwargs)
     
     # apply mask
     im_out_mat = apply.apply_mask(im=im, mask=mask, bg=bg)
