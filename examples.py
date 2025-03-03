@@ -4,7 +4,7 @@ from PIL import Image
 import os.path as op
 import numpy as np
 import matplotlib.pyplot as plt
-from src.bubblemask import mask
+from src.bubblemask import mask, build
 
 np.random.seed(152872)
 
@@ -91,8 +91,6 @@ cat2.save(op.join(out_dir, 'cat2.png'))
 cat3.save(op.join(out_dir, 'cat3.png'))
 
 # %% Example 5 - masks
-
-from bubblemask import build
 
 # same bubble parameters for all masks
 mu_y = [20, 30, 70]
