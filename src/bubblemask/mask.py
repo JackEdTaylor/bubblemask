@@ -69,7 +69,7 @@ def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0):
     return(im_out, mask, mu_x, mu_y, sigma)
 
 
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=True, sum_merge=False, max_sigma_from_nonzero=np.inf):
+def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, max_sigma_from_nonzero=np.inf, **kwargs):
     """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im<=bg gives 0, else 1, so binary dilation can be applied. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -80,6 +80,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction
+    **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum`.
     """
 
     # if no ref_im, use the original image
@@ -94,7 +95,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     
     # if no limits, just use bubbles_mask()
     if np.isposinf(max_sigma_from_nonzero):
-        return(bubbles_mask(im=im, sigma=sigma, bg=bg, scale=scale, sum_merge=sum_merge))
+        return(bubbles_mask(im=im, sigma=sigma, bg=bg, **kwargs))
     
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
@@ -103,8 +104,9 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     
     n_iter = np.max(sigma_dil_iters)
     
-    max_axis = 1 if np.array(ref_im).ndim==2 else 2
-    mu_bounds = np.max(np.asarray(ref_im) > bg, axis=max_axis)
+    ref_im_arr = np.asarray(ref_im)
+    max_axis = 1 if ref_im_arr.ndim==2 else 2
+    mu_bounds = np.max(ref_im_arr > bg, axis=max_axis)
     
     # this will contain the desired mu bounds for each sigma
     sigma_mu_bounds = [None] * len(sigma)
@@ -128,7 +130,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     mu_x = [int(poss_mu[i][1][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
     
     # build mask
-    mask = build.build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, sum_merge=sum_merge)
+    mask = build.build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, **kwargs)
     
     # apply mask
     im_out_mat = apply.apply_mask(im=im, mask=mask, bg=bg)
