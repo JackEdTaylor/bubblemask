@@ -70,8 +70,8 @@ def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0):
     return(im_out, mask, mu_x, mu_y, sigma)
 
 
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, max_sigma_from_nonzero=np.inf, **kwargs):
-    """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im<=bg gives 0, else 1, so binary dilation can be applied. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, ref_bg=0, max_sigma_from_nonzero=np.inf, **kwargs):
+    """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im>ref_bg (or ref_im>ref_bg), so binary dilation can be applied. Any products of sigma and max_sigma_from_nonzero that are floats will be rounded to the nearest integer. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
     im -- the image to apply the bubbles mask to
@@ -102,12 +102,16 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, max_sigm
     
     # get acceptable boundaries for each sigma
     sigma_dil_iters = np.round(np.array(sigma) * max_sigma_from_nonzero).astype(int)
+
+    # check that the product of sigma and max_sigma_from_nonzero is always an integer - otherwise give a warning
+    if np.any(sigma_dil_iters != sigma_dil_iters.round()):
+        Warning('Some values in max_sigma_from_nonzero*sigma are non-integer. These will be rounded to the nearest integer!')
     
     n_iter = np.max(sigma_dil_iters)
     
     ref_im_arr = np.asarray(ref_im)
     max_axis = 1 if ref_im_arr.ndim==2 else 2
-    mu_bounds = np.max(ref_im_arr > bg, axis=max_axis)
+    mu_bounds = np.max(ref_im_arr > ref_bg, axis=max_axis)
     
     # this will contain the desired mu bounds for each sigma
     sigma_mu_bounds = [None] * len(sigma)
