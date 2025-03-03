@@ -79,8 +79,12 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
     scale -- should densities' maxima be consistently scaled across different sigma values?
     sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
-    max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.inf` for no restriction
+    max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction
     """
+
+    # if no ref_im, use the original image
+    if ref_im is None:
+        ref_im = im
 
     # check that max_sigma_from_nonzero is just one value
     if np.size(max_sigma_from_nonzero) != 1:
@@ -95,14 +99,12 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.array([5]), bg=0, scale=Tr
     # get the acceptable mu locations for each sigma value, and store in `sigma_mu_bounds`
     
     # get acceptable boundaries for each sigma
-    sigma_dil_iters = [int(np.round(s * max_sigma_from_nonzero)) for s in sigma]
+    sigma_dil_iters = np.round(np.array(sigma) * max_sigma_from_nonzero).astype(int)
     
-    n_iter = max(sigma_dil_iters)
+    n_iter = np.max(sigma_dil_iters)
     
-    if ref_im is None:
-        mu_bounds = np.max(np.asarray(im) > bg, axis=2)
-    else:
-        mu_bounds = np.max(np.asarray(ref_im) > bg, axis=2)
+    max_axis = 1 if np.array(ref_im).ndim==2 else 2
+    mu_bounds = np.max(np.asarray(ref_im) > bg, axis=max_axis)
     
     # this will contain the desired mu bounds for each sigma
     sigma_mu_bounds = [None] * len(sigma)
