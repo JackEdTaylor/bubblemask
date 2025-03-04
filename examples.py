@@ -168,7 +168,7 @@ for sg, sigma in enumerate(sigmas):
 lines = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubbles))]
 
 # axs[len(axs)-1].legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(1.05, 1), borderaxespad=0)
-fig.legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.125, 1.02, 0.825, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
+fig.legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.25, 1.02, 0.55, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
 
 fig.supxlabel('Image Size (px$^2$)')
 fig.supylabel('Density Method Speedup (ms)')
