@@ -4,7 +4,10 @@ from PIL import Image
 import os.path as op
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from src.bubblemask import mask, build
+import time
+from tqdm import trange
 
 np.random.seed(152872)
 
@@ -111,36 +114,65 @@ for i in range(4):
 
 # %% Compare timing for convolution and outer product approaches
 
-import time
-from tqdm import tqdm
+n_iter = 50  # per combination of parameters
 
-n_iter = 1000
-sigma = 2.5
-sh = (1000, 1000)  # shape of the desired masks
-n_bubbles = 100
+sizes = np.array([25, 50, 100, 250, 500, 1000, 1500, 2000])
 
-conv_times = []
-op_times = []
+n_bubbles = np.array([1, 5, 10, 100])
 
-for i in tqdm(range(n_iter), desc='Timing approaches'):
-    # select locations from uniform distribution of integers
-    mu_x = np.random.randint(sh[1], size=n_bubbles)
-    mu_y = np.random.randint(sh[0], size=n_bubbles)
-    # time convolution approach
-    conv_s = time.process_time()
-    conv_m = build.build_conv_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigma], sh=sh)
-    conv_e = time.process_time()
-    conv_times.append(conv_e-conv_s)
-    # time outer product approach
-    op_s = time.process_time()
-    op_m = build.build_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigma], sh=sh, scale=True, sum_merge=False)
-    op_e = time.process_time()
-    op_times.append(op_e-op_s)
+sigmas = np.array([1, 5, 10, 25])
+
+conv_times = np.zeros((len(sizes), len(n_bubbles), len(sigmas), n_iter))
+op_times = conv_times.copy()
+
+for i in trange(n_iter, desc='Timing approaches'):
+    for sz in range(len(sizes)):
+        # get shape
+        sh = (sizes[sz], sizes[sz])
+
+        for nb in range(len(n_bubbles)):
+
+            for sg in range(len(sigmas)):
+                # select locations from uniform distribution of integers
+                # (convolution approach requires integers)
+                mu_x = np.random.randint(sizes[sz], size=n_bubbles[nb])
+                mu_y = np.random.randint(sizes[sz], size=n_bubbles[nb])
+
+                # time convolution approach
+                conv_s = time.process_time()
+                conv_m = build.build_conv_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigmas[sg]], sh=sh)
+                conv_e = time.process_time()
+                conv_times[sz, nb, sg, i] = conv_e - conv_s
+                # time outer product approach
+                op_s = time.process_time()
+                op_m = build.build_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigmas[sg]], sh=sh, scale=True, sum_merge=False)
+                op_e = time.process_time()
+                op_times[sz, nb, sg, i] = op_e - op_s
 
 # get difference
-diffs = np.array(conv_times)-np.array(op_times)
-mean_diff = np.mean(diffs)
-sd_diff = np.std(diffs)
-comp_word = "faster" if mean_diff>0 else "slower"
+diffs = conv_times - op_times
 
-print(f'The outer product approach was M={np.abs(np.round(mean_diff*1000, 2))} (SD={np.round(sd_diff*1000, 2)}) milliseconds {comp_word}')
+# plot
+fig, axs = plt.subplots(1, len(sigmas), figsize=(6.5, 2.5))
+
+cmap = mpl.colormaps.get_cmap('Dark2')
+
+for sg, sigma in enumerate(sigmas):
+    axs[sg].set_title(f'$\sigma$={sigma}')
+    axs[sg].axhline(y=0, linestyle='--', color='k')
+
+    for nb, n_bub in enumerate(n_bubbles):
+        axs[sg].plot(sizes, np.mean( diffs[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb))
+
+# create legend
+lines = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubbles))]
+
+# axs[len(axs)-1].legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(1.05, 1), borderaxespad=0)
+fig.legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.125, 1.02, 0.825, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
+
+fig.supxlabel('Image Size (px$^2$)')
+fig.supylabel('Outer Product Speedup (ms)')
+
+fig.tight_layout()
+
+fig.savefig(op.join(out_dir, f'timing_comparison.png'), dpi=100, bbox_inches='tight')

@@ -86,8 +86,8 @@ face2.show()
 
 ## Using a Convolution-Based Method
 
-Previous implementations I've seen have used a convolution-based approach, where bubble locations are convolved with a Gaussian kernel. This is also available, with the `build_conv_mask()` and `bubbles_conv_mask()` functions. Key differences are that:
-* Sigma values must be identical for all bubbles, as one kernel is applied globally (could alternatively average over multiple per-sigma convolutions)
+Previous implementations I've seen have used a convolution-based approach, where bubble locations are convolved with a Gaussian kernel. This is also available, with the `build.build_conv_mask()` and `mask.bubbles_conv_mask()` functions. Key differences are that:
+* Sigma values must be identical for all bubbles if one kernel is applied globally (could alternatively average over multiple per-sigma convolutions)
 * Locations of `x` and `y` must be integers (rounded if floats) so that bubble precision is limited by resolution of the image
 
 Here is a comparison of the methods:
@@ -119,7 +119,7 @@ plt.imshow(mask3b); plt.colorbar()
 ![](img/post/face3a_mask.png)
 ![](img/post/face3b_mask.png)
 
-There are only small differences in the approaches, owing to (I think?) floating point precision:
+There are only small differences in the approaches, owing to (I think?) imprecision at the extremeties of bubbles in the convolution-based method:
 
 ```python
 plt.imshow(mask3a-mask3b)
@@ -128,7 +128,12 @@ plt.colorbar()
 
 ![](img/post/face3_mask_diff.png)
 
-This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (i) more precise in specifying mu, and (ii) supports bubbles of different sizes.
+This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities allows you to give mu as floats.
+
+The outer product approach of `bubblemask` is also generally slightly faster - especially for large images and high sigma values:
+
+![](img/post/timing_comparison.png)
+*Time difference between the convolution and outer product methods, averaged over 50 iterations per combination of size, sigma, and N bubbles. Positive values mean the outer product method is faster.*
 
 ## Naturalistic Images
 
@@ -152,11 +157,13 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 
 ## Avoiding Uninformative Locations
 
-It is often more efficient to avoid adding bubbles to regions that you know have no informative information, such as the background. `bubbles_mask_nonzero()` can exclude regions of the background which are sufficiently distant as to be uninformative.
+It is often more efficient to avoid adding bubbles to regions that you know have no informative information or are irrelevant to your a hypothesis, such as the background. `bubbles_mask_nonzero()` will exclude regions of the background which are sufficiently distant from an informative region.
 
-Specifically, the centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background pixel in a reference image. Background pixels are identified as `im <= bg`.
+The centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background (by default, non-zero) pixel in a reference image, `ref_im`. Background pixels are identified as `ref_im <= ref_bg`.
 
-The usage is similar to `bubbles_mask()`, but with additional arguments `ref_im` (reference image) and `max_sigma_from_nonzero`. Imagine we are only interested in the letter *a* in this image:
+The usage is similar to `bubbles_mask()`, but with additional arguments `ref_im` (reference image), `ref_bg` (the cutoff for deciding whether a `ref_im` pixel is informative), and `max_sigma_from_nonzero` (how far away from the informative regions can a bubble be).
+
+Imagine we are only interested in the letter *a* in this image:
 
 ```python
 a_cat = Image.open(op.join('img', 'pre', 'a_cat.png'))
@@ -186,7 +193,7 @@ a_cat1.show()
 
 ![](img/post/a_cat1.png)
 
-Here is a snippet showing that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. Here we apply 1000 bubbles (in blue) superimposed on the letter *a*, with bubbles' centres at a maximum distance of 1 standard deviations from the character.
+Here is a snippet showing that `bubbles_mask_nonzero()` only selects bubble locations whose centres are $\le$`max_sigma_from_nonzero` standard deviations of the non-background pixels. Here we apply 1000 bubbles to the letter *a*, with bubbles' centres at a maximum distance of 1 standard deviations from the character.
 
 ```python
 a_cat2, maskacat2, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(
