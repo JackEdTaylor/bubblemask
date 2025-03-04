@@ -171,7 +171,7 @@ lines = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubble
 fig.legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.125, 1.02, 0.825, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
 
 fig.supxlabel('Image Size (px$^2$)')
-fig.supylabel('Outer Product Speedup (ms)')
+fig.supylabel('Density Method Speedup (ms)')
 
 fig.tight_layout()
 
