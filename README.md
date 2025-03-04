@@ -128,7 +128,7 @@ plt.colorbar()
 
 ![](img/post/face3_mask_diff.png)
 
-This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities allows you to give mu as floats.
+This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities allows you to give mu as floats (better precision).
 
 The density approach of `bubblemask` is also generally slightly faster - especially for large images and high sigma values:
 
