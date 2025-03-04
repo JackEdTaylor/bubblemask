@@ -175,4 +175,4 @@ fig.supylabel('Outer Product Speedup (ms)')
 
 fig.tight_layout()
 
-fig.savefig(op.join(out_dir, f'timing_comparison.png'), dpi=100, bbox_inches='tight')
+fig.savefig(op.join(out_dir, f'timing_comparison.png'), dpi=300, bbox_inches='tight')
