@@ -172,7 +172,7 @@ a_cat.show()
 
 ![](img/pre/a_cat.png)
 
-First, we need a reference image, where the target region has values of 1, and the uninformative regions have values of 0. If there is an alpha channel, this should also have a value of 0 for the uninformative regions.
+First, we need a reference image, where the target region has values of >0 (e.g., of 1), and the uninformative regions have values of 0. If there is an alpha channel, this should also have a value of 0 for the uninformative regions.
 
 ```python
 a_cat_ref = Image.open(op.join('img', 'pre', 'a_cat_ref.png'))
