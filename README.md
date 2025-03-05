@@ -211,7 +211,7 @@ plt.imshow(maskacat2); plt.colorbar()
 
 An advantage of this approach is that bubbles of different sizes can be merged. By default, this implementation averages the bubbles and scales the result to within [0, 1]. An alternative may be to take the sum and apply a threshold of the pre-sum maximum across the bubbles. Similarly, the method scales bubbles by default, so that bubbles of different sigma have equal maxima in their densities, where an alternative would be to leave the bubbles unscaled.
 
-Here is a visualisation of the possible options in mask construction, using `sum_merge` and `scale` arguments, which can be passed to `bubble_mask()`:
+Here is a visualisation of the possible options in mask construction, using `sum_merge` and `scale` arguments, which can be passed to `bubbles_mask()`:
 
 ```python
 from bubblemask import build
