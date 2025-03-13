@@ -77,8 +77,6 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma=np.array([5]), bg=0, ref_bg=0, 
     ref_im -- the image to be used as the reference image for finding the minimum (useful for finding the minimum in a pre-distorted im)
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
-    scale -- should densities' maxima be consistently scaled across different sigma values?
-    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction
     max_iter -- maximum number of random samples to try for mu location, for each sigma
     **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
