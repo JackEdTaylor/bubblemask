@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 from skimage.morphology import binary_dilation
+import warnings
 from . import build, apply
 
 def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, **kwargs):
@@ -148,7 +149,12 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma=np.array([5]), bg=0, ref_bg=0, 
     
     # get acceptable boundaries for each sigma
     sigma_dists = sigma * max_sigma_from_nonzero
-    sigma_dil_iters = np.ceil(sigma_dists).astype(int)
+
+    with warnings.catch_warnings():
+        # ignore warnings about any invalid casts to integer for np.inf, as this is handled below
+        if np.any(np.isposinf(sigma_dists)):
+            warnings.filterwarnings("ignore", message='invalid value encountered in cast', category=RuntimeWarning)
+        sigma_dil_iters = np.ceil(sigma_dists).astype(int)
 
     sigma_dil_iters[np.isposinf(sigma_dists)] = 0  # no iterations for bubbles with infinite max dist, as these are added manually below (if all infinite, will have already done an early return via bubbles_mask())
     
