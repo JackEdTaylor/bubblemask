@@ -130,7 +130,7 @@ plt.colorbar()
 
 This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities allows you to give mu as floats (better precision).
 
-The density approach of `bubblemask` is also slightly faster - especially for large images and high sigma values:
+The density approach of `bubblemask` is also generally faster and scales better with increases in image size and sigma values:
 
 ![](img/post/timing_comparison.png)
 *Time taken to create a bubbles mask for the convolution and density methods, averaged over 50 iterations per combination of size, sigma, and N bubbles.*
