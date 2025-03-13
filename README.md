@@ -157,7 +157,7 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 
 ## Avoiding Uninformative Locations
 
-It is often more efficient to avoid adding bubbles to regions that you know have no informative information or are irrelevant to your a hypothesis, such as the background. `bubbles_mask_nonzero()` will exclude regions of the background which are sufficiently distant from an informative region.
+It is often more efficient to avoid adding bubbles to regions that you know have no informative information or are irrelevant to your hypothesis, such as the background. `bubbles_mask_nonzero()` will exclude regions of the background which are sufficiently distant from an informative region.
 
 The centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background (by default, non-zero) pixel in a reference image, `ref_im`. Background pixels are identified as `ref_im <= ref_bg`.
 
