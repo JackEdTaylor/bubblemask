@@ -82,6 +82,11 @@ plt.imshow(maskacat2)
 plt.colorbar()
 fig.savefig(op.join(out_dir, 'a_cat2_mask.png'), dpi=80, bbox_inches='tight')
 
+# demonstrate that each bubble can have a different max_sigma_from_nonzero value, and that 0 and np.inf are supported
+a_cat3, maskacat3, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(im=a_cat, ref_im=a_cat_ref, sigma=[25, 10, 5], max_sigma_from_nonzero=[np.inf, 2.75, 0], ref_bg=[0,0,0,255], bg=[0,0,0,255])
+
+a_cat3.save(op.join(out_dir, 'a_cat3.png'))
+
 # %% Example 4 - cat
 
 cat = Image.open(op.join(in_dir, 'cat.png'))

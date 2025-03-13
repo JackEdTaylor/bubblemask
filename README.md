@@ -207,6 +207,20 @@ plt.imshow(maskacat2); plt.colorbar()
 ![](img/post/a_cat2.png)
 ![](img/post/a_cat2_mask.png)
 
+Finally, you can also define per-bubble constraints for `max_sigma_from_nonzero`, and values of `np.inf` and `0` are supported:
+
+```python
+a_cat3, maskacat3, mu_x, mu_y, sigma = mask.bubbles_mask_nonzero(
+    im=a_cat, ref_im=a_cat_ref,
+    sigma = [25, 10, 5],
+    max_sigma_from_nonzero = [np.inf, 2.75, 0],
+    ref_bg=[0,0,0,255], bg=[0,0,0,255])
+
+a_cat3.show()
+```
+
+![](img/post/a_cat3.png)
+
 ## Bubble Merging Method
 
 An advantage of this approach is that bubbles of different sizes can be merged. By default, this implementation averages the bubbles and scales the result to within [0, 1]. An alternative may be to take the sum and apply a threshold of the pre-sum maximum across the bubbles. Similarly, the method scales bubbles by default, so that bubbles of different sigma have equal maxima in their densities, where an alternative would be to leave the bubbles unscaled.
