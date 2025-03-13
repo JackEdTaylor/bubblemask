@@ -4,17 +4,30 @@ from skimage.morphology import binary_dilation
 from . import build, apply
 
 def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, **kwargs):
-    """Apply the bubbles mask to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+    """
+    Apply the bubbles mask to a given PIL image.
     
-     Keyword arguments:
-    im -- the PIL image to apply the bubbles mask to
-    mu_x -- x indices (axis 1 in numpy) for bubble locations - set to None (default) for random location
-    mu_y -- y indices (axis 0 in numpy) for bubble locations - set to None (default) for random location
-    sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
-    scale -- should densities' maxima be consistently scaled across different sigma values?
-    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
-    **kwargs -- passed to `build.build_mask`, e.g., `scale` and `sum_merge`.
+    Parameters
+    ----------
+    im : PIL.Image.Image
+        The image to apply the bubbles mask to.
+    mu_x, mu_y : array_like, optional
+        Indices of bubble locations in x (`mu_x`) and y (`mu_y`) dimensions. Can be floats. The default (`None`) sets to random locations.
+    sigma : array_like
+        Array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array.
+    bg : array_like
+        Value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 for RGBA.
+    **kwargs :
+        Additional arguments passed to `build.build_mask`, e.g., `scale` and `sum_merge`.
+
+    Returns
+    -------
+    im_out : PIL.Image-Image
+        Bubble-masked image.
+    mask : np.array
+        The numpy array used as a mask for `im`, with the same shape as `im`.
+    mu_x, mu_y, sigma : np.array
+        The locations of bubbles in x (`mu_x`) and y (`mu_y`) dimensions, with corresponding `sigma` values.
     """
     
     n = len(sigma)  # get n bubbles
@@ -39,14 +52,28 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0, **kwargs)
 
 
 def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0):
-    """Apply a bubbles mask generated via convolution to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
-    
-     Keyword arguments:
-    im -- the PIL image to apply the bubbles mask to
-    mu_x -- x indices (axis 1 in numpy) for bubble locations - set to None (default) for random location. Must be integers (will be rounded otherwise)
-    mu_y -- y indices (axis 0 in numpy) for bubble locations - set to None (default) for random location. Must be integers (will be rounded otherwise)
-    sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array, but all values should be identical for this method
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
+    """
+    Apply a bubbles mask generated via convolution to a given PIL image.
+
+    Parameters
+    ----------
+    im : PIL.Image.Image
+        The image to apply the bubbles mask to.
+    mu_x, mu_y : array_like, optional
+        Indices of bubble locations in x (`mu_x`) and y (`mu_y`) dimensions. Must be integers (will be rounded otherwise). The default (`None`) sets to random locations.
+    sigma : array_like
+        Array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array.
+    bg : array_like
+        Value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 for RGBA.
+
+    Returns
+    -------
+    im_out : PIL.Image-Image
+        Bubble-masked image.
+    mask : np.array
+        The numpy array used as a mask for `im`, with the same shape as `im`.
+    mu_x, mu_y, sigma : np.array
+        The locations of bubbles in x (`mu_x`) and y (`mu_y`) dimensions, with corresponding `sigma` values.
     """
     
     n = len(sigma)  # get n bubbles
@@ -70,15 +97,32 @@ def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.array([5]), bg=0):
     return(im_out, mask, mu_x, mu_y, sigma)
 
 def bubbles_mask_nonzero (im, ref_im=None, sigma=np.array([5]), bg=0, ref_bg=0, max_sigma_from_nonzero=np.inf, **kwargs):
-    """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im>ref_bg (or ref_im>ref_bg), so binary dilation can be applied, with a slight buffer (rounded to ceiling). The function then picks random locations, and keeps them if the Euclidean distance from the non-zero values is within the tolerance, otherwise rejecting them. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+    """
+    Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im>ref_bg (or ref_im>ref_bg), so binary dilation can be applied, with a slight buffer (rounded to ceiling). The function then picks random locations, and keeps them if the Euclidean distance from the non-zero values is within the tolerance, otherwise rejecting them.
     
-     Keyword arguments:
-    im -- the image to apply the bubbles mask to
-    ref_im -- the image to be used as the reference image for finding the minimum (useful for finding the minimum in a pre-distorted im)
-    sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
-    max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction. Can be either one value for all bubbles, or a separate value for each individual bubble. If multiple values are given, then `max_sigma_from_nonzero` must contain the same number of elements as `sigma`.
-    **kwargs -- passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
+    Parameters
+    ----------
+    im : PIL.Image.Image
+        The image to apply the bubbles mask to.
+    ref_im : PIL.Image.Image, optional
+        The image to be used as the reference image for finding `bg` values. Default is `None` in which case, `im` is used instead.
+    sigma : array_like
+        Array of sigmas for the spread of the bubbles. `n` is inferred from the length of this array.
+    bg : array_like
+        Value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 for RGBA.
+    max_sigma_from_nonzero : array_like
+        Maximum multiples of the given sigma value from the nearest nonzero values in ref_im that a bubble's centre can be. Can be `np.inf` for no restriction, or `0` to constrain to within the bounds of `bg` exactly. Can be either one value for all bubbles, or a separate value for each individual bubble. If multiple values are given, then `max_sigma_from_nonzero` must contain the same number of elements as `sigma`.
+    **kwargs
+        Extra arguments passed to `mask.bubbles_mask` and/or `build.build_mask`, e.g., `scale` and `sum_merge`.
+
+    Returns
+    -------
+    im_out : PIL.Image-Image
+        Bubble-masked image.
+    mask : np.array
+        The numpy array used as a mask for `im`, with the same shape as `im`.
+    mu_x, mu_y, sigma : np.array
+        The locations of bubbles in x (`mu_x`) and y (`mu_y`) dimensions, with corresponding `sigma` values.
     """
     sigma = np.array(sigma)
     max_sigma_from_nonzero = np.array(max_sigma_from_nonzero)

@@ -3,15 +3,28 @@ from scipy.stats import norm
 from scipy.ndimage import gaussian_filter
 
 def build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False):
-    """Build a Bubbles mask which can be applied to an image of shape `sh`. Returns a matrix for the mask.
+    """
+    Build a Bubbles mask which can be applied to an image of shape `sh`.
     
-     Keyword arguments:
-    mu_y -- the locations of the bubbles centres, in numpy axis 0
-    mu_x -- the locations of the bubbles centres, in numpy axis 1 (should be same len as mu_y)
-    sigma -- array of sigmas for the spread of the bubbles (should be same len as mu_y)
-    sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
-    scale -- should densities' maxima be consistently scaled across different sigma values?
-    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
+    Parameters
+    ----------
+    mu_y : array_like
+        The locations of the bubbles' centres, in numpy axis 0.
+    mu_x : array_like
+        The locations of the bubbles centres, in numpy axis 1 (should be same len as `mu_y`).
+    sigma : array_like
+        Array of sigmas for the spread of the bubbles (should be same len as `mu_y`).
+    sh : tuple
+        Shape (np.shape) of the desired mask (usually the shape of the respective image).
+    scale : bool
+        Should densities' maxima be consistently scaled across different sigma values? Default is `True`.
+    sum_merge : bool
+        Should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
+
+    Returns
+    -------
+    mask : np.array
+        The mask, with shape `sh`.
     """
     # check lengths match and are all 1d
     gauss_pars_sh = [np.shape(x) for x in [mu_y, mu_x, sigma]]
@@ -50,14 +63,23 @@ def build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False):
 
 def build_conv_mask(mu_y, mu_x, sigma, sh):
     """
-    Build a Bubbles mask via convolution which can be applied to an image of shape `sh`. Returns a matrix for the mask.
-    Unlike build_mask(), build_conv_mask() requires that all sigma values are equal.
+    Build a Bubbles mask via convolution which can be applied to an image of shape `sh`. Unlike build_mask(), build_conv_mask() requires that all sigma values are equal.
     
-     Keyword arguments:
-    mu_y -- the locations of the bubbles centres, in numpy axis 0. Must be integers (will be rounded otherwise)
-    mu_x -- the locations of the bubbles centres, in numpy axis 1 (should be same len as mu_y). Must be integers (will be rounded otherwise)
-    sigma -- a single value for sigma, or else an array of sigmas for the spread of the bubbles (in which case, should be same len as mu_y, and should all be identical)
-    sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
+    Parameters
+    ----------
+    mu_y : array_like
+        The locations of the bubbles' centres, in numpy axis 0. Must be integers (will be rounded otherwise).
+    mu_x : array_like
+        The locations of the bubbles centres, in numpy axis 1 (should be same len as `mu_y`).  Must be integers (will be rounded otherwise).
+    sigma : array_like
+        A single value for sigma, or else an array of sigmas for the spread of the bubbles (in which case, should be same len as mu_y, and should all be identical).
+    sh : tuple
+        Shape (np.shape) of the desired mask (usually the shape of the respective image).
+
+    Returns
+    -------
+    mask : np.array
+        The mask, with shape `sh`.
     """
     # if sigma is given as a list, get the single value
     if isinstance(sigma, list) | isinstance(sigma, np.ndarray):

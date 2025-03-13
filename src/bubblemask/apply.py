@@ -1,12 +1,22 @@
 import numpy as np
 
 def apply_mask(im, mask, bg=0):
-    """Apply a mask to image `im`. Returns a PIL image.
+    """
+    Apply a mask to image `im`.
     
-     Keyword arguments:
-    im -- the original image
-    mask -- the mask to apply to the image
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values for RGBA
+    Parameters
+    ----------
+    im : PIL.Image.Image
+        The image to apply the mask to.
+    mask : array_like
+        The mask to apply to the image.
+    bg : array_like, optional
+        Value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values for RGBA. Default is 0.
+
+    Returns
+    -------
+    im_out_mat : np.array
+        Array representation of the masked image.
     """
     
     sh = np.asarray(im).shape
