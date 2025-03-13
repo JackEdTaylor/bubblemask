@@ -168,14 +168,14 @@ for sg, sigma in enumerate(sigmas):
     for nb, n_bub in enumerate(n_bubbles):
         axs[sg].plot(sizes, np.mean( conv_times[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb), linestyle='dashed')
         axs[sg].plot(sizes, np.mean( op_times[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb))
+    
+    axs[sg].set_ylim(0, max([np.max(conv_times), np.max(op_times)])*1000)
 
 # create legends
 lines_col = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubbles))]
 lines_style = [mpl.lines.Line2D([0], [0], linestyle=st, color='k') for st in ['solid', 'dashed']]
 
-# axs[len(axs)-1].legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(1.05, 1), borderaxespad=0)
 fig.legend(lines_col, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.075, 1.02, 0.45, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
-
 fig.legend(lines_style, ['Density', 'Convolution'], title='Bubble Method', bbox_to_anchor=(0.575, 1.02, 0.375, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
 
 fig.supxlabel('Image Size (px$^2$)')
