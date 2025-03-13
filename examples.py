@@ -117,7 +117,8 @@ for i in range(4):
     plt.colorbar()
     fig.savefig(op.join(out_dir, f'mask{i+1}.png'), dpi=100, bbox_inches='tight')
 
-# %% Compare timing for convolution and outer product approaches
+# %%
+# Compare timing for convolution and outer product approaches
 
 n_iter = 50  # per combination of parameters
 
@@ -154,10 +155,8 @@ for i in trange(n_iter, desc='Timing approaches'):
                 op_e = time.process_time()
                 op_times[sz, nb, sg, i] = op_e - op_s
 
-# get difference
-diffs = conv_times - op_times
-
-# plot
+# %%
+# plot timing results
 fig, axs = plt.subplots(1, len(sigmas), figsize=(6.5, 2.5))
 
 cmap = mpl.colormaps.get_cmap('Dark2')
@@ -167,16 +166,20 @@ for sg, sigma in enumerate(sigmas):
     axs[sg].axhline(y=0, linestyle='--', color='k')
 
     for nb, n_bub in enumerate(n_bubbles):
-        axs[sg].plot(sizes, np.mean( diffs[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb))
+        axs[sg].plot(sizes, np.mean( conv_times[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb), linestyle='dashed')
+        axs[sg].plot(sizes, np.mean( op_times[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb))
 
-# create legend
-lines = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubbles))]
+# create legends
+lines_col = [mpl.lines.Line2D([0], [0], color=cmap(nb)) for nb in range(len(n_bubbles))]
+lines_style = [mpl.lines.Line2D([0], [0], linestyle=st, color='k') for st in ['solid', 'dashed']]
 
 # axs[len(axs)-1].legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(1.05, 1), borderaxespad=0)
-fig.legend(lines, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.25, 1.02, 0.55, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
+fig.legend(lines_col, n_bubbles, title='N Bubbles', bbox_to_anchor=(0.075, 1.02, 0.45, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
+
+fig.legend(lines_style, ['Density', 'Convolution'], title='Bubble Method', bbox_to_anchor=(0.575, 1.02, 0.375, 0.2), loc='lower left', mode='expand', borderaxespad=0, ncol=len(n_bubbles))
 
 fig.supxlabel('Image Size (px$^2$)')
-fig.supylabel('Density Method Speedup (ms)')
+fig.supylabel('Time Taken (ms)')
 
 fig.tight_layout()
 

@@ -133,7 +133,7 @@ This means that with reasonable rounding of the masks, the approaches would be f
 The density approach of `bubblemask` is also slightly faster - especially for large images and high sigma values:
 
 ![](img/post/timing_comparison.png)
-*Time difference between the convolution and density methods, averaged over 50 iterations per combination of size, sigma, and N bubbles. Positive values mean the density method is faster.*
+*Time taken to make bubbles for the convolution and density methods, averaged over 50 iterations per combination of size, sigma, and N bubbles.*
 
 ## Naturalistic Images
 
