@@ -163,7 +163,7 @@ cmap = mpl.colormaps.get_cmap('Dark2')
 
 for sg, sigma in enumerate(sigmas):
     axs[sg].set_title(f'$\sigma$={sigma}')
-    axs[sg].axhline(y=0, linestyle='--', color='k')
+    # axs[sg].axhline(y=0, linestyle='--', color='k')
 
     for nb, n_bub in enumerate(n_bubbles):
         axs[sg].plot(sizes, np.mean( conv_times[:, nb, sg, :]*1000, axis=1 ), color=cmap(nb), linestyle='dashed')
